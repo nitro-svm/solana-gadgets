@@ -1,9 +1,4 @@
 [workspace]
-members = [
-    "gadgets-common",
-    "gadgets-scfs",
-    "sad",
-    "scfsd",
-    "scfs-program",
-]
+resolver = "2"
+members = ["gadgets-common", "gadgets-scfs", "sad", "scfsd", "scfs-program"]
 exclude = ["gadgets-scfs10"]

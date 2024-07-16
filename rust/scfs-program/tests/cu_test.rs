@@ -21,7 +21,7 @@ mod tests {
     /// Location/Name of ProgramTestGenesis ledger
     const LEDGER_PATH: &str = "./.ledger";
     /// Path to BPF program (*.so)
-    const PROG_PATH: &str = "target/deploy/";
+    const PROG_PATH: &str = "../target/deploy/";
     /// Program name from program Cargo.toml
     /// FILL IN WITH YOUR PROGRAM
     const PROG_NAME: &str = "scfs_program";
@@ -36,7 +36,7 @@ mod tests {
         invalidate_features: Vec<Pubkey>,
     ) -> Result<(TestValidator, Keypair), Box<dyn error::Error>> {
         // Extend environment variable to include our program location
-        std::env::set_var("BPF_OUT_DIR", PROG_PATH);
+        std::env::set_var("SBF_OUT_DIR", PROG_PATH);
         // Instantiate the test validator
         let mut test_validator = TestValidatorGenesis::default();
         // Once instantiated, TestValidatorGenesis configuration functions follow

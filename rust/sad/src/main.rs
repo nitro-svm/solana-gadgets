@@ -1,5 +1,7 @@
 //! @brief Main entry poiint for CLI
 
+use std::rc::Rc;
+
 use clparse::get_account_and_descriptor;
 
 use {
@@ -9,7 +11,7 @@ use {
     solana_client::rpc_client::RpcClient,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
     solana_sdk::{commitment_config::CommitmentConfig, signature::Signer},
-    std::{process::exit, sync::Arc},
+    std::process::exit,
 };
 
 /// sad main module
@@ -37,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("");
         exit(-1);
     });
-    let mut wallet_manager: Option<Arc<RemoteWalletManager>> = None;
+    let mut wallet_manager: Option<Rc<RemoteWalletManager>> = None;
     let config = {
         let cli_config = if let Some(config_file) = matches.value_of("config_file") {
             solana_cli_config::Config::load(config_file).unwrap_or_default()
