@@ -18,7 +18,7 @@
 
 use lazy_static::*;
 use scfs_errors::{ScfsError, ScfsResult};
-use solana_client::rpc_client::RpcClient;
+use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{
     account::Account, clock::Slot, feature, feature_set::FEATURE_NAMES, pubkey::Pubkey,
 };
@@ -269,7 +269,7 @@ impl ScfsMatrix {
     }
 
     /// Populate rows from cluster statusing
-    fn process_cluster(
+    async fn process_cluster(
         &mut self,
         query_set: &Vec<Pubkey>,
         cluster_ref: &Option<Vec<String>>,
@@ -296,6 +296,7 @@ impl ScfsMatrix {
                         for iset in dst {
                             for (_, account) in rcpclient
                                 .get_multiple_accounts(&iset)
+                                .await
                                 .unwrap()
                                 .into_iter()
                                 .enumerate()
@@ -317,10 +318,10 @@ impl ScfsMatrix {
     }
 
     /// Run the matrix
-    pub fn run(&mut self) -> ScfsResult<()> {
+    pub async fn run(&mut self) -> ScfsResult<()> {
         let qs = self.get_query_set().clone();
         let csref = self.get_criteria().get_clusters().clone();
-        self.process_cluster(&qs, &csref)
+        self.process_cluster(&qs, &csref).await
     }
 
     /// Retrieve criteria used in processing
@@ -404,8 +405,8 @@ mod tests {
         SCFS_TESTNET,
     };
 
-    #[test]
-    fn full_empty_criteria_pass() {
+    #[tokio::test]
+    async fn full_empty_criteria_pass() {
         let mut my_matrix = ScfsMatrix::new(None).unwrap();
         if let Some(c) = &my_matrix.get_criteria().features {
             assert_eq!(c.len(), SCFS_FEATURE_PKS.len());
@@ -413,7 +414,7 @@ mod tests {
         if let Some(c) = &my_matrix.get_criteria().clusters {
             assert_eq!(c.len(), SCFS_CLUSTER_LIST.len());
         }
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         for res_row in my_matrix.get_result_rows() {
             println!(
                 "{} Local {:?} Dev {:?}",
@@ -422,8 +423,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_localnet_pass() {
+    #[tokio::test]
+    async fn test_localnet_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_LOCAL.to_string());
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -431,13 +432,13 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         for res_row in my_matrix.get_result_rows() {
             println!("{:?}", res_row)
         }
     }
-    #[test]
-    fn test_devnet_pass() {
+    #[tokio::test]
+    async fn test_devnet_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_DEVNET.to_string());
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -445,13 +446,13 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         for res_row in my_matrix.get_result_rows() {
             println!("{:?}", res_row)
         }
     }
-    #[test]
-    fn test_devnet_filter_inactive_pass() {
+    #[tokio::test]
+    async fn test_devnet_filter_inactive_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_DEVNET.to_string());
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -459,7 +460,7 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         let inactives = my_matrix
             .get_features(Some(&ScfsMatrix::any_inactive))
             .unwrap();
@@ -469,8 +470,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_devnet_testnet_filter_all_inactive_pass() {
+    #[tokio::test]
+    async fn test_devnet_testnet_filter_all_inactive_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_DEVNET.to_string());
         cluster_vec.push(SCFS_TESTNET.to_string());
@@ -479,7 +480,7 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         let inactives = my_matrix
             .get_features(Some(&ScfsMatrix::all_inactive))
             .unwrap();
@@ -488,8 +489,8 @@ mod tests {
             println!("{:?}", res_row)
         }
     }
-    #[test]
-    fn test_devnet_testnet_filter_all_active_pass() {
+    #[tokio::test]
+    async fn test_devnet_testnet_filter_all_active_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_DEVNET.to_string());
         cluster_vec.push(SCFS_TESTNET.to_string());
@@ -498,7 +499,7 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         let inactives = my_matrix
             .get_features(Some(&ScfsMatrix::all_active))
             .unwrap();
@@ -507,8 +508,8 @@ mod tests {
             println!("{:?}", res_row)
         }
     }
-    #[test]
-    fn bad_features_fail() {
+    #[tokio::test]
+    async fn bad_features_fail() {
         let mut base_criteria = ScfsCriteria::default();
         base_criteria.features = None;
         let my_matrix = ScfsMatrix::new(Some(base_criteria));
@@ -523,8 +524,8 @@ mod tests {
         assert!(my_matrix.is_err());
         println!("{:?}", my_matrix);
     }
-    #[test]
-    fn bad_clusters_fail() {
+    #[tokio::test]
+    async fn bad_clusters_fail() {
         let faux_field = "funny_business".to_string();
         let mut faux_vec = Vec::<String>::new();
         faux_vec.push(faux_field);
