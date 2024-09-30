@@ -22,6 +22,7 @@ pub fn build_command_line_parser() -> App<'static> {
                 .long("keys-only-for-inactive")
                 .multiple_occurrences(false)
                 .short('k')
+                .action(clap::ArgAction::SetTrue)
                 .help("Generates list of inactivated feature keys for specific cluster (-c) of devnet, testnet or mainnet"),
         )
         .arg(
@@ -29,6 +30,7 @@ pub fn build_command_line_parser() -> App<'static> {
                 .long("target-test-validator")
                 .multiple_occurrences(false)
                 .short('t')
+                .action(clap::ArgAction::SetTrue)
                 .help("Combined with -k, generates list of inactivated feature keys for input to solana-test-validator"),
         )
 }

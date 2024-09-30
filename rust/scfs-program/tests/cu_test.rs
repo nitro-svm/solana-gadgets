@@ -139,8 +139,8 @@ mod tests {
         assert!(txn.is_ok());
     }
 
-    #[test]
-    fn test_devnet_parity_pass() {
+    #[tokio::test]
+    async fn test_devnet_parity_pass() {
         // Use gadget-scfs to get all deactivated features from devnet
         // must have `gadgets-scfs = "0.2.0" in Cargo.toml to use
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -148,7 +148,7 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         let deactivated = my_matrix
             .get_features(Some(&ScfsMatrix::any_inactive))
             .unwrap();

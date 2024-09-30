@@ -154,8 +154,8 @@ mod tests {
         ScfsCriteria, ScfsMatrix, SCFS_DEVNET, SCFS_LOCAL, SCFS_MAINNET, SCFS_TESTNET,
     };
 
-    #[test]
-    fn test_local_pass() {
+    #[tokio::test]
+    async fn test_local_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_LOCAL.to_string());
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -163,11 +163,11 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         write_matrix_stdio(&my_matrix);
     }
-    #[test]
-    fn test_devnet_pass() {
+    #[tokio::test]
+    async fn test_devnet_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_DEVNET.to_string());
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -175,11 +175,11 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         write_matrix_stdio(&my_matrix);
     }
-    #[test]
-    fn test_testnet_pass() {
+    #[tokio::test]
+    async fn test_testnet_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_TESTNET.to_string());
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -187,11 +187,11 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         write_matrix_stdio(&my_matrix);
     }
-    #[test]
-    fn test_mainnet_pass() {
+    #[tokio::test]
+    async fn test_mainnet_pass() {
         let mut cluster_vec = Vec::<String>::new();
         cluster_vec.push(SCFS_MAINNET.to_string());
         let mut my_matrix = ScfsMatrix::new(Some(ScfsCriteria {
@@ -199,7 +199,7 @@ mod tests {
             ..Default::default()
         }))
         .unwrap();
-        assert!(my_matrix.run().is_ok());
+        assert!(my_matrix.run().await.is_ok());
         write_matrix_stdio(&my_matrix);
     }
 }

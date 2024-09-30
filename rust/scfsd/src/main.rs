@@ -12,7 +12,8 @@ use utils::write_matrix_stdio;
 mod clparse;
 mod utils;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Command line args
     let matches = build_command_line_parser().get_matches();
     let mut inc_set = HashSet::<&str>::new();
@@ -26,8 +27,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }))
     }?;
 
-    matrix_result.run()?;
-    if matches.is_present("keys_only_for_inactive") && inc_set.len() == 1 {
+    matrix_result.run().await?;
+    if matches.get_flag("keys_only_for_inactive") && inc_set.len() == 1 {
         let test_for: HashSet<_> = ["all", "local"].iter().cloned().collect();
         let intersection: HashSet<_> = test_for.intersection(&inc_set).collect();
         if intersection.len() == 0 {
@@ -35,7 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let inactives = matrix_result.get_features(Some(&ScfsMatrix::all_inactive))?;
             let istr: Vec<String> = inactives.iter().map(|f| f.to_string()).collect();
             // If target is input to solana-test-validator
-            if matches.is_present("target-test-validator") {
+            if matches.get_flag("target-test-validator") {
                 let mut rvec = vec!["--deactivate-feature".to_string()];
                 rvec.push(istr.join(" --deactivate-feature "));
                 println!("{}", rvec.join(" "));
